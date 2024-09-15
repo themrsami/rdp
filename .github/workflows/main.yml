@@ -7,37 +7,17 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Download ngrok
-      run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-
-    - name: Extract ngrok
-      run: Expand-Archive ngrok.zip -DestinationPath ngrok
-
-    - name: Authenticate ngrok
-      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
-      env:
-        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-
     - name: Enable RDP and Configure Windows
       run: |
-        # Enable Remote Desktop connections
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
-        # Enable firewall for Remote Desktop
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        # Set RDP user authentication to required
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
-        # Set password for the runneradmin account
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
-        # Restart RDP services with the Force flag to stop dependent services
         Restart-Service termservice -Force
 
-    - name: Start ngrok Tunnel for RDP
-      run: .\ngrok\ngrok.exe tcp 3389
+    - name: Start Serveo Tunnel for RDP
+      run: ssh -R 80:localhost:3389 serveo.net
 
-    - name: Display ngrok RDP Address
-      run: .\ngrok\ngrok.exe info
-
-    - name: Pause for Testing (Simulate Stuck Connection)
+    - name: Simulate Stuck Behavior for 10 Minutes
       run: |
-        Write-Host "Testing RDP session for 10 minutes. You can connect using the provided ngrok URL."
-        Start-Sleep -Seconds 600  # Sleep for 10 minutes to simulate stuck RDP
+        Write-Host "Simulating stuck tunnel for 10 minutes..."
+        Start-Sleep -Seconds 600
