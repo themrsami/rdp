@@ -14,8 +14,13 @@ jobs:
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
         Restart-Service termservice -Force
 
-    - name: Start Serveo Tunnel for RDP
-      run: ssh -T -R 80:localhost:3389 serveo.net
+    - name: Start Serveo Tunnel for RDP and Capture Output
+      shell: bash
+      run: |
+        echo "Starting Serveo tunnel..."
+        ssh -T -R 80:localhost:3389 serveo.net > serveo_output.txt &
+        sleep 10  # Give Serveo time to establish the tunnel
+        cat serveo_output.txt  # Output the Serveo tunnel URL
 
     - name: Simulate Stuck Behavior for 10 Minutes
       run: |
