@@ -15,7 +15,7 @@ jobs:
         Restart-Service termservice -Force
 
     - name: Start Serveo Tunnel for RDP
-      run: ssh -R 80:localhost:3389 serveo.net
+      run: ssh -T -R 80:localhost:3389 serveo.net
 
     - name: Simulate Stuck Behavior for 10 Minutes
       run: |
