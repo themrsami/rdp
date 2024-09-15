@@ -4,6 +4,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
+
     runs-on: windows-latest
 
     steps:
@@ -13,23 +14,28 @@ jobs:
     - name: Extract ngrok
       run: Expand-Archive ngrok.zip -DestinationPath ngrok
 
-    - name: Install OpenSSH Server via Windows Capabilities
-      run: |
-        Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
-        Start-Service sshd
-        Set-Service -Name sshd -StartupType 'Automatic'
-        New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
-
-    - name: Set SSH Password for Runner User
-      run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
-
     - name: Authenticate ngrok
       run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
 
-    - name: Create SSH Tunnel with ngrok
-      run: .\ngrok\ngrok.exe tcp 22
+    - name: Enable RDP in Windows
+      run: |
+        # Enable Remote Desktop connections
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+        # Enable firewall for Remote Desktop
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        # Set RDP user authentication to required
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+        # Change the default RDP port to avoid detection (optional)
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name 'PortNumber' -Value 3389
+        # Set password for the runner admin account
+        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
+        # Restart RDP services to apply changes
+        Restart-Service termservice
 
-    - name: Display ngrok SSH URL
+    - name: Start ngrok Tunnel
+      run: .\ngrok\ngrok.exe tcp 3389
+
+    - name: Display ngrok RDP Address
       run: .\ngrok\ngrok.exe info
