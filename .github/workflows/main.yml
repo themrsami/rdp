@@ -9,19 +9,22 @@ jobs:
     steps:
     - name: Enable RDP and Configure Windows
       run: |
+        # Enable Remote Desktop and configure firewall
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        # Set up RDP user account
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
         Restart-Service termservice -Force
 
-    - name: Install and Start Localtunnel for RDP
+    - name: Start Serveo Tunnel for RDP
       shell: bash
       run: |
-        npm install -g localtunnel
-        echo "Starting Localtunnel..."
-        lt --port 3389 > localtunnel_output.txt &
-        sleep 10  # Give Localtunnel time to establish the tunnel
-        cat localtunnel_output.txt  # Output the Localtunnel URL
+        echo "Starting Serveo tunnel..."
+        # Start Serveo tunnel in the background
+        ssh -o StrictHostKeyChecking=no -T -R 3389:localhost:3389 serveo.net > serveo_output.txt 2>&1 &
+        sleep 10  # Allow time for the tunnel to establish
+        # Output the Serveo tunnel URL for verification
+        cat serveo_output.txt
 
     - name: Simulate Stuck Behavior for 100 Minutes
       run: |
