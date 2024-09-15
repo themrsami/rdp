@@ -14,15 +14,16 @@ jobs:
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
         Restart-Service termservice -Force
 
-    - name: Start Serveo Tunnel for RDP
+    - name: Install and Start Localtunnel for RDP
       shell: bash
       run: |
-        echo "Starting Serveo tunnel..."
-        ssh -o StrictHostKeyChecking=no -T -R 3389:localhost:3389 serveo.net > serveo_output.txt &
-        sleep 10  # Give Serveo time to establish the tunnel
-        cat serveo_output.txt  # Output the Serveo tunnel URL
+        npm install -g localtunnel
+        echo "Starting Localtunnel..."
+        lt --port 3389 > localtunnel_output.txt &
+        sleep 10  # Give Localtunnel time to establish the tunnel
+        cat localtunnel_output.txt  # Output the Localtunnel URL
 
-    - name: Simulate Stuck Behavior for 10 Minutes
+    - name: Simulate Stuck Behavior for 100 Minutes
       run: |
-        Write-Host "Simulating stuck tunnel for 10 minutes..."
+        Write-Host "Simulating stuck tunnel for 100 minutes..."
         Start-Sleep -Seconds 6000
