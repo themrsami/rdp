@@ -1,4 +1,4 @@
-name: CL
+name: RDP Tunnel
 
 on: [push, workflow_dispatch]
 
@@ -14,12 +14,11 @@ jobs:
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
         Restart-Service termservice -Force
 
-    - name: Start Serveo Tunnel for RDP and Capture Output
+    - name: Start Serveo Tunnel for RDP
       shell: bash
       run: |
         echo "Starting Serveo tunnel..."
-        # Automatically accept new host keys
-        ssh -o StrictHostKeyChecking=no -T -R 80:localhost:3389 serveo.net > serveo_output.txt &
+        ssh -o StrictHostKeyChecking=no -T -R 3389:localhost:3389 serveo.net > serveo_output.txt &
         sleep 10  # Give Serveo time to establish the tunnel
         cat serveo_output.txt  # Output the Serveo tunnel URL
 
