@@ -4,7 +4,6 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-
     runs-on: windows-latest
 
     steps:
@@ -19,23 +18,26 @@ jobs:
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
 
-    - name: Enable RDP in Windows
+    - name: Enable RDP and Configure Windows
       run: |
         # Enable Remote Desktop connections
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         # Enable firewall for Remote Desktop
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         # Set RDP user authentication to required
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-        # Change the default RDP port to avoid detection (optional)
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name 'PortNumber' -Value 3389
-        # Set password for the runner admin account
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
+        # Set password for the runneradmin account
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
-        # Restart RDP services to apply changes
-        Restart-Service termservice
+        # Restart RDP services with the Force flag to stop dependent services
+        Restart-Service termservice -Force
 
-    - name: Start ngrok Tunnel
+    - name: Start ngrok Tunnel for RDP
       run: .\ngrok\ngrok.exe tcp 3389
 
     - name: Display ngrok RDP Address
       run: .\ngrok\ngrok.exe info
+
+    - name: Pause for Testing (Simulate Stuck Connection)
+      run: |
+        Write-Host "Testing RDP session for 10 minutes. You can connect using the provided ngrok URL."
+        Start-Sleep -Seconds 600  # Sleep for 10 minutes to simulate stuck RDP
