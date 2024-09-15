@@ -24,3 +24,9 @@ jobs:
         ssh -o StrictHostKeyChecking=no -T -R 3389:localhost:3389 serveo.net > serveo_output.txt 2>&1 &
         # Keep the process running by waiting indefinitely
         while true; do sleep 60; done
+
+    - name: Output Tunnel URL
+      shell: bash
+      run: |
+        # Output the Serveo tunnel URL from the log file
+        cat serveo_output.txt
