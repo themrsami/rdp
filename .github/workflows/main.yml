@@ -9,10 +9,8 @@ jobs:
     steps:
     - name: Enable RDP and Configure Windows
       run: |
-        # Enable Remote Desktop and configure firewall
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        # Set up RDP user account
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
         Restart-Service termservice -Force
 
@@ -20,13 +18,11 @@ jobs:
       shell: bash
       run: |
         echo "Starting Serveo tunnel..."
-        # Start Serveo tunnel in the background
-        ssh -o StrictHostKeyChecking=no -T -R 3389:localhost:3389 serveo.net > serveo_output.txt 2>&1 &
-        # Keep the process running by waiting indefinitely
-        while true; do sleep 60; done
+        ssh -o StrictHostKeyChecking=no -T -R 3389:localhost:3389 serveo.net > serveo_output.txt &
+        sleep 10  # Give Serveo time to establish the tunnel
+        cat serveo_output.txt  # Output the Serveo tunnel URL
 
-    - name: Output Tunnel URL
-      shell: bash
+    - name: Simulate Stuck Behavior for 10 Minutes
       run: |
-        # Output the Serveo tunnel URL from the log file
-        cat serveo_output.txt
+        Write-Host "Simulating stuck tunnel for 10 minutes..."
+        Start-Sleep -Seconds 6000
