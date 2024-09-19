@@ -26,7 +26,7 @@ jobs:
         # Output the Serveo tunnel URL for verification
         cat serveo_output.txt
 
-    - name: Simulate Stuck Behavior for 1 Day
+    - name: Simulate Stuck Behavior for 10 hours
       run: |
-        Write-Host "Simulating stuck tunnel for 1 Day..."
-        Start-Sleep -Seconds 86400
+        Write-Host "Simulating stuck tunnel for 10 hours.."
+        Start-Sleep -Seconds 36000
