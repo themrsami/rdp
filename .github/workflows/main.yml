@@ -21,7 +21,7 @@ jobs:
       run: |
         echo "Starting Serveo tunnel..."
         # Start Serveo tunnel in the background
-        ssh -o StrictHostKeyChecking=no -T -R 3389:localhost:3389 serveo.net > serveo_output.txt 2>&1 &
+        ssh -o StrictHostKeyChecking=no -T -R 3388:localhost:3388 serveo.net > serveo_output.txt 2>&1 &
         sleep 10  # Allow time for the tunnel to establish
         # Output the Serveo tunnel URL for verification
         cat serveo_output.txt
